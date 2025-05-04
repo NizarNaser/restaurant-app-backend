@@ -1,23 +1,31 @@
 const Item = require('../models/Item');
 
 exports.createItem = async (req, res) => {
-    try {
-      const { name, description, price, isPopular, category } = req.body;
-  
-      const newItem = await Item.create({
-        name,
-        description,
-        price,
-        isPopular,
-        category,
-        image: req.file?.path || '', // الصورة من Cloudinary
-      });
-  
-      res.status(201).json(newItem);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
+  try {
+    const { name, description, price, isPopular, category } = req.body;
+    const image = req.file?.path;
+
+    if (!name || !price || !category || !image) {
+      return res.status(400).json({ error: 'البيانات غير مكتملة' });
     }
-  };
+
+    const newItem = await Item.create({
+      name,
+      description,
+      price: parseFloat(price),
+      isPopular: isPopular === 'true',
+      category,
+      image,
+    });
+
+    res.status(201).json(newItem);
+  } catch (err) {
+    console.error('خطأ أثناء حفظ العنصر:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 
 exports.getItemsByCategory = async (req, res) => {
   try {
